@@ -26,7 +26,7 @@ const loadRazorpay = () => new Promise((resolve, reject) => {
 });
 
 export default function CheckoutModal({ isOpen, onClose }) {
-  const { cart, finalTotal, subtotal, savings, deliveryFee, couponDiscount, clearCart } = useCart();
+  const { cart, finalTotal, subtotal, savings, deliveryFee, couponDiscount, appliedCoupon, clearCart } = useCart();
   const { addOrder } = useOrders();
   const [step, setStep] = useState('form'); // 'form' | 'success'
   const [orderId, setOrderId] = useState('');
@@ -67,20 +67,21 @@ export default function CheckoutModal({ isOpen, onClose }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const finalizeOrder = (paymentMethod, paymentId = '') => {
+  const finalizeOrder = (serverOrder) => {
     const newOrder = addOrder({
       customer: { ...formData },
-      items: [...cart],
-      subtotal,
-      deliveryFee,
-      discount: (savings || 0) + (couponDiscount || 0),
-      total: finalTotal,
-      paymentMethod,
-      paymentId,
-      paymentStatus: paymentMethod === 'COD' ? 'Pending' : 'Paid'
+      items: serverOrder.items,
+      subtotal: serverOrder.subtotal,
+      deliveryFee: serverOrder.deliveryFee,
+      discount: serverOrder.discount,
+      total: serverOrder.total,
+      paymentMethod: serverOrder.paymentMethod,
+      paymentId: serverOrder.paymentId || '',
+      paymentStatus: serverOrder.paymentStatus,
+      serverOrderId: serverOrder.id,
     });
 
-    setOrderId(newOrder.id);
+    setOrderId(serverOrder.id || newOrder.id);
     setIsPaymentLoading(false);
     setStep('success');
     clearCart();
@@ -91,23 +92,31 @@ export default function CheckoutModal({ isOpen, onClose }) {
     if (!validate()) return;
     setPaymentError('');
 
-    if (formData.paymentMethod === 'cod') {
-      finalizeOrder('COD');
-      return;
-    }
-
     setIsPaymentLoading(true);
     try {
-      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
-      if (!razorpayKey) {
-        throw new Error('Razorpay is not configured. Add VITE_RAZORPAY_KEY_ID to your environment.');
+      const createResponse = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(({ id, quantity }) => ({ id, quantity })),
+          couponCode: appliedCoupon?.code,
+          customer: formData,
+          paymentMethod: formData.paymentMethod,
+        }),
+      });
+      const created = await createResponse.json();
+      if (!createResponse.ok) throw new Error(created.error || 'Unable to create your order.');
+
+      if (formData.paymentMethod === 'cod') {
+        finalizeOrder(created.order);
+        return;
       }
 
       const Razorpay = await loadRazorpay();
       const payment = new Razorpay({
-        key: razorpayKey,
-        amount: Math.round(finalTotal * 100),
-        currency: 'INR',
+        key: created.razorpay.key,
+        amount: created.razorpay.amount,
+        currency: created.razorpay.currency,
         name: 'Basket Boost',
         description: 'Basket Boost order payment',
         prefill: {
@@ -122,8 +131,21 @@ export default function CheckoutModal({ isOpen, onClose }) {
         theme: {
           color: '#4f46e5'
         },
-        handler: (response) => {
-          finalizeOrder(`RAZORPAY ${formData.paymentMethod.toUpperCase()}`, response.razorpay_payment_id);
+        order_id: created.razorpay.orderId,
+        handler: async (response) => {
+          try {
+            const verifyResponse = await fetch('/api/orders/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response),
+            });
+            const verified = await verifyResponse.json();
+            if (!verifyResponse.ok) throw new Error(verified.error || 'Payment verification failed.');
+            finalizeOrder({ ...verified.order, paymentId: response.razorpay_payment_id });
+          } catch (error) {
+            setIsPaymentLoading(false);
+            setPaymentError(error.message || 'We could not verify your payment. Please contact support.');
+          }
         },
         modal: {
           ondismiss: () => setIsPaymentLoading(false)
