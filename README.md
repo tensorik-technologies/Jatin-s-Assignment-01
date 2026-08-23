@@ -13,7 +13,7 @@
 
 The application delivers an ultra-smooth, commercial-grade shopping experience with multi-faceted product discovery, instant client-side keyword search, category filtering, dynamic price range filtering, interactive product details with thumbnail galleries, real-time quantity steppers, persistent wishlist management, dark/light theme switching, and simulated multi-step checkout.
 
-> **Note:** This project is built as a frontend client-side application with browser-persisted catalogs, cart items, wishlists, and user preferences. Razorpay Checkout is used for online payments; production deployments should add a backend for Razorpay order creation and payment signature verification.
+> **Note:** Product browsing, carts, wishlists, and preferences use browser storage. Checkout uses Vercel server functions for Razorpay order creation and payment signature verification, with fulfilled orders persisted in Neon Postgres.
 
 ---
 
@@ -74,10 +74,17 @@ The application delivers an ultra-smooth, commercial-grade shopping experience w
 ## 💳 Razorpay Setup
 
 1. Copy `.env.example` to `.env.local`.
-2. Set `VITE_RAZORPAY_KEY_ID` to your Razorpay test or live key ID.
-3. Run `npm run dev` and use UPI or card checkout.
+2. Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `.env.local`.
+3. Connect a Neon Postgres database and set `DATABASE_URL` plus `DATABASE_URL_UNPOOLED`.
+4. Run the migration before starting the app:
 
-Only the Razorpay key ID belongs in the frontend. Never expose a Razorpay key secret in Vite environment variables or client-side code. A production backend should create Razorpay orders and verify the returned payment signature before fulfilling orders.
+```bash
+npm run db:migrate
+```
+
+Checkout amounts are recalculated server-side from the product catalog. The server creates Razorpay orders, verifies each payment signature, and stores all COD and verified online orders in Neon. The secret must never use a `VITE_` prefix or be committed.
+
+For Vercel production, configure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `DATABASE_URL`, and `DATABASE_URL_UNPOOLED` as environment variables.
 
 ---
 
@@ -192,7 +199,9 @@ npm run build
 
 ## 🌐 Deployment
 
-* **Live Demo URL**: `https://basket-boost.vercel.app` *(Placeholder for deployment)*
+* **Live Demo URL**: `https://basket-boost.vercel.app`
+* **Database**: Neon Postgres, connected through the Vercel Marketplace.
+* **Deployment**: Run `npx vercel --prod` after applying `npm run db:migrate`.
 
 ---
 
