@@ -33,9 +33,6 @@ The application delivers a seamless shopping experience with:
 | Role | Email | Password |
 |:---|:---|:---|
 | **Customer** | `customer@basketboost.com` | `password123` |
-| **Admin** | `admin@basketboost.com` | `adminpassword` |
-
----
 
 ## ✨ Key Features
 
@@ -47,11 +44,6 @@ The application delivers a seamless shopping experience with:
 - **Wishlist** — One-click save/remove with persistent badge counters
 - **Order Tracking** — Customer order history with delivery status updates
 - **User Profile** — Personal info, address management, photo upload, and loyalty rewards
-
-### 🔐 Admin Panel
-- **Dashboard KPIs** — Real-time store analytics and metrics
-- **Product CRUD** — Inventory management with bulk operations
-- **Order Fulfillment** — Process and track customer orders
 
 ### 🎨 Design & Performance
 - **Dark/Light Theme** — Persistent mode toggle with CSS variables
@@ -71,7 +63,6 @@ The application delivers a seamless shopping experience with:
 | **State** | React Hooks (`useState`, `useEffect`, `useContext`, `useMemo`, `useCallback`) |
 | **Storage** | Web LocalStorage API |
 | **Build** | Vite 5+ |
-| **Database** | Neon Postgres + Drizzle ORM |
 | **Payments** | Razorpay (UPI, Cards, Cash on Delivery) |
 | **Deployment** | Vercel |
 
