@@ -167,40 +167,6 @@ export default function Navbar() {
         {/* Actions (Wishlist, Cart, Theme, Mobile Menu) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           
-          {/* Account / Profile Link */}
-          {isAuthenticated ? (
-            <Link
-              to="/profile"
-              className="btn btn-secondary btn-sm"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.35rem 0.75rem'
-              }}
-              title={`View Profile (${userProfile.name})`}
-              id="nav-profile-btn"
-            >
-              <img
-                src={userProfile.avatar}
-                alt={userProfile.name}
-                style={{ width: '22px', height: '22px', borderRadius: '50%', objectFit: 'cover' }}
-              />
-              <span style={{ fontSize: '0.8125rem', fontWeight: '700' }} className="desktop-user-name">
-                {userProfile.name.split(' ')[0]}
-              </span>
-            </Link>
-          ) : (
-            <Link
-              to="/login"
-              className="btn btn-primary btn-sm"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-            >
-              <User size={15} />
-              <span>Sign In</span>
-            </Link>
-          )}
-
           <ThemeToggle />
 
           {/* Wishlist Link with Badge */}
@@ -355,26 +321,6 @@ export default function Navbar() {
               }}
             >
               <span>All Products</span>
-              <ChevronRight size={16} color="var(--text-muted)" />
-            </Link>
-
-            <Link
-              to={isAuthenticated ? '/profile' : '/login'}
-              onClick={() => setMobileMenuOpen(false)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0.75rem',
-                borderRadius: 'var(--radius-md)',
-                fontWeight: '600',
-                color: 'var(--text-primary)'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <User size={18} color="var(--primary)" />
-                <span>{isAuthenticated ? `My Profile (${userProfile.name})` : 'Sign In / Register'}</span>
-              </div>
               <ChevronRight size={16} color="var(--text-muted)" />
             </Link>
 

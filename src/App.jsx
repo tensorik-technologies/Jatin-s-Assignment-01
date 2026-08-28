@@ -18,8 +18,6 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import OrdersPage from './pages/OrdersPage';
-import LoginPage from './pages/LoginPage';
-import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -44,8 +42,6 @@ export default function App() {
                           <Route path="/cart" element={<CartPage />} />
                           <Route path="/wishlist" element={<WishlistPage />} />
                           <Route path="/orders" element={<OrdersPage />} />
-                          <Route path="/profile" element={<ProfilePage />} />
-                          <Route path="/login" element={<LoginPage />} />
 
                           {/* Fallback 404 Route */}
                           <Route path="*" element={<NotFoundPage />} />
